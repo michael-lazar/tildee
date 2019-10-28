@@ -36,8 +36,8 @@ class TildesTopic:
 
         self.title = self._tree.cssselect("article.topic-full > header > h1")[0].text
         try:
-            self.content_html = str(
-                etree.tostring(self._tree.cssselect("div.topic-full-text")[0])
+            self.content_html = (
+                etree.tostring(self._tree.cssselect("div.topic-full-text")[0], encoding="unicode")
             )
         except IndexError:
             self.content_html = None
@@ -133,7 +133,7 @@ class TildesPartialTopic:
         elif self._tree.cssselect(".topic-text-excerpt"):
             tree = self._tree.cssselect(".topic-text-excerpt")[0]
             etree.strip_elements(tree, "summary")
-            self.content_html = str(etree.tostring(tree))
+            self.content_html = etree.tostring(tree, encoding="unicode")
         try:
             self.num_votes = int(
                 self._tree.cssselect("span.topic-voting-votes")[0].text
@@ -202,9 +202,10 @@ class TildesComment:
         self.timestamp = self._tree.cssselect("time.comment-posted-time")[0].attrib[
             "datetime"
         ]
-        self.content_html = str(
-            etree.tostring(self._tree.cssselect("div.comment-text")[0])
+        self.content_html = (
+            etree.tostring(self._tree.cssselect("div.comment-text")[0], encoding="unicode")
         )
+
         vote_btn_text = "0"
         try:
             vote_btn_text = self._tree.cssselect(
@@ -284,8 +285,8 @@ class TildesMessage:
         self.timestamp = self._tree.cssselect("time.time-responsive")[0].attrib[
             "datetime"
         ]
-        self.content_html = str(
-            etree.tostring(self._tree.cssselect("div.message-text")[0])
+        self.content_html = (
+            etree.tostring(self._tree.cssselect("div.message-text")[0], encoding="unicode")
         )
 
 
@@ -446,4 +447,4 @@ class TildesWikiPage:
         content.remove(content.cssselect("a")[-1])
         content.remove(content.cssselect("p.text-secondary")[-1])
         content.remove(content.cssselect("hr")[-1])
-        self.content_html = etree.tostring(content)
+        self.content_html = etree.tostring(content, encoding="unicode")
