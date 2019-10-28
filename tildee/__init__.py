@@ -32,8 +32,8 @@ class TildesClient:
 
     def __init__(
         self,
-        username: str,
-        password: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
         totp_code: Optional[str] = None,
         base_url: str = "https://tildes.net",
         verify_ssl: bool = True,
@@ -51,7 +51,10 @@ class TildesClient:
         self._verify_ssl = verify_ssl
         self._ratelimit = timedelta(milliseconds=ratelimit)
         self._lastreq = datetime.utcnow()
-        self._login(password, totp_code)
+        self._csrf_token = None
+        self._cookies = None
+        if username:
+            self._login(password, totp_code)
 
     def __del__(self):
         self._logout()

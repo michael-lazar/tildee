@@ -421,9 +421,10 @@ class TildesGroup:
             .text.strip()
             .split(" ")[0]
         )
-        self.subscribed = False
-        if "Unsubscribe" in self._tree.cssselect("td button")[0].text:
-            self.subscribed = True
+        self.subscribed = None
+        button = self._tree.cssselect("td button")
+        if button:
+            self.subscribed = "Unsubscribe" in button[0].text
 
 
 class TildesWikiPage:
