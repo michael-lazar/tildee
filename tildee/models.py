@@ -2,6 +2,8 @@ from lxml import html, etree
 from enum import Enum, auto
 import re
 
+from html2text import html2text
+
 
 class TildesTopic:
     """Represents a single topic on Tildes, generated from the entire page.
@@ -39,9 +41,10 @@ class TildesTopic:
             self.content_html = (
                 etree.tostring(self._tree.cssselect("div.topic-full-text")[0], encoding="unicode")
             )
+            self.content = html2text(self.content_html)
         except IndexError:
             self.content_html = None
-
+            self.content = None
         try:
             self.link = self._tree.cssselect("div.topic-full-link > a")[0].attrib[
                 "href"
@@ -128,12 +131,14 @@ class TildesPartialTopic:
         self.author = self._tree.cssselect("article")[0].attrib["data-topic-posted-by"]
         self.link = None
         self.content_html = None
+        self.content = None
         if not self._tree.cssselect("header h1 > a")[0].attrib["href"].startswith("/"):
             self.link = self._tree.cssselect("header h1 > a")[0].attrib["href"]
         elif self._tree.cssselect(".topic-text-excerpt"):
             tree = self._tree.cssselect(".topic-text-excerpt")[0]
             etree.strip_elements(tree, "summary")
             self.content_html = etree.tostring(tree, encoding="unicode")
+            self.content = html2text(self.content_html)
         try:
             self.num_votes = int(
                 self._tree.cssselect("span.topic-voting-votes")[0].text
@@ -190,12 +195,18 @@ class TildesComment:
         self.status = TildesAccessStatus.FULL
         if self._tree.cssselect("div.is-comment-removed"):
             self.status = TildesAccessStatus.REMOVED
-            self.author, self.timestamp, self.content_html = "", "", ""
+            self.author = None
+            self.timestamp = None
+            self.content_html = None
+            self.content = None
             self.num_votes = 0
             return
         elif self._tree.cssselect("div.is-comment-deleted"):
             self.status = TildesAccessStatus.DELETED
-            self.author, self.timestamp, self.content_html = "", "", ""
+            self.author = None
+            self.timestamp = None
+            self.content_html = None
+            self.content = None
             self.num_votes = 0
             return
         self.author = self._tree.cssselect("a.link-user")[0].text
@@ -205,8 +216,8 @@ class TildesComment:
         self.content_html = (
             etree.tostring(self._tree.cssselect("div.comment-text")[0], encoding="unicode")
         )
+        self.content = html2text(self.content_html)
 
-        vote_btn_text = "0"
         try:
             vote_btn_text = self._tree.cssselect(
                 "button[name='vote'], div.comment-votes"
@@ -288,6 +299,7 @@ class TildesMessage:
         self.content_html = (
             etree.tostring(self._tree.cssselect("div.message-text")[0], encoding="unicode")
         )
+        self.content = html2text(self.content_html)
 
 
 class TildesTopicLogEntry:
@@ -449,3 +461,4 @@ class TildesWikiPage:
         content.remove(content.cssselect("p.text-secondary")[-1])
         content.remove(content.cssselect("hr")[-1])
         self.content_html = etree.tostring(content, encoding="unicode")
+        self.content = html2text(self.content_html)
