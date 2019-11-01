@@ -6,6 +6,7 @@ from lxml import html, etree
 from datetime import datetime, timedelta
 import time
 from typing import Union, List, Optional
+from urllib.parse import urlunsplit, urlencode
 
 from tildee.models import (
     TildesTopic,
@@ -231,20 +232,37 @@ class TildesClient:
         r = self._get(f"/~group_name_here/{topic_id36}")
         return TildesTopic(r.text)
 
-    def fetch_topic_listing(self, path: str) -> List[TildesPartialTopic]:
+    def fetch_topic_listing(
+            self,
+            path: str,
+            after: str = "",
+            order: str = "",
+            period: str = "",
+            per_page: int = 100,
+    ) -> List[TildesPartialTopic]:
         """Fetches, parses and returns all topics from a certain URL.
 
         I.e. an empty string for the home page, ``~group`` for a group or ``search?q=a`` for a search.
         Appends ``per_page=100`` to the path for maximum results.
 
         :param str path: The URL to fetch from.
+        :param str after: Limit to topics older than this id36.
+        :param str order: The order to sort results.
+        :param str period: The time period to fetch results.
+        :param str per_page: The maximum number of results to return.
         :rtype: List[TildesPartialTopic]
         :return: The requested topics."""
-        r = None
-        if "?" in path:
-            r = self._get(f"/{path}&per_page=100")
-        else:
-            r = self._get(f"/{path}?per_page=100")
+
+        query = {"per_page": per_page}
+        if after:
+            query["after"] = after
+        if order:
+            query["order"] = order
+        if period:
+            query["period"] = period
+
+        url = urlunsplit(("", "", f"/{path}", urlencode(query), ""))
+        r = self._get(url)
 
         articles = html.fromstring(r.text).cssselect("article.topic")
         topics = []
