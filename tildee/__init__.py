@@ -57,9 +57,6 @@ class TildesClient:
         if username:
             self._login(password, totp_code)
 
-    def __del__(self):
-        self._logout()
-
     def _login(self, password: str, totp_code: Optional[str] = None):
         login_page = requests.get(
             self.base_url + "/login", headers=self._headers, verify=self._verify_ssl
