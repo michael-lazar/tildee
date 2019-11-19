@@ -147,7 +147,7 @@ class TildesPartialTopic:
             self.num_votes = 0
         self.num_comments = int(
             re.findall(
-                "[0-9]+", self._tree.cssselect(".topic-info-comments > a")[0].text
+                "[0-9]+", self._tree.cssselect(".topic-info-comments > a > span")[0].text
             )[0]
         )
 
